@@ -5,6 +5,6 @@ const passport = require("passport");
 const userController = require("../controllers/userController");
 
 router.post("/api/signup", userController.signUpUser);
-router.post("/api/login",userController.getUserFromDb);
+router.post("/api/login", userController.verifyToken, userController.getUserFromDb);
 
 module.exports = router;
