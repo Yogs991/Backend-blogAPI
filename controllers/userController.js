@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 
-async function signUpUser(req,res){
+async function userSignUp(req,res){
     try{
         const {email, name, password} = req.body;
 
@@ -48,23 +48,32 @@ async function signUpUser(req,res){
     }
 }
 
-async function getUserFromDb(req, res){
+async function userLogin(req, res){
     try {
         const {email, password} = req.body;
+
+        //Check for empty fields
         if(!email || !password){
             return res.status(400).json({message: 'Email and password are required'});
         }
+
         const userEmail = await prisma.user.findUnique({
             where: { email }
         });
 
+        //Check for invalid email
         if(!userEmail){
             return res.status(401).json({error: "Invalid email"});
         }
+
+        //Check for invalid password
         const passwordMatch = await bcrypt.compare(password, user.password);
+
         if(!passwordMatch){
             return res.status(401).json({error: "Invalid password"});
         }
+
+        //Create jwt token
         const token = jwt.sign(
             {userId: user.id, userEmail: user.email, userName: user.name},
             process.env.JWT_SECRET,
@@ -86,26 +95,47 @@ async function getUserFromDb(req, res){
     }
 }
 
-function verifyToken(req,res,next){
-    //Get auth header value
-    const bearerHeader = req.headers['authorization'];
-    //Check if bearer is undefined
-    if(typeof bearerHeader !== 'undefined'){
-        //Split at the space
-        const bearer = bearerHeader.split(' ');
-        //Get token from array
-        const bearerToken = bearer[1];
-        //Set the token
-        req.token = bearerToken;
-        //next middleware
-        next();
-    }else{
-        res.status(403);
+async function getSinglePostByUser(req,res){
+    const {id, postId} = req.params;
+    try {
+        const post = await prisma.post.findFirst({
+            where:{
+                id: parseInt(postId),
+                authorId: parseInt(id)
+            }
+        });
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found for this user' });
+        }
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error"});
+    }
+}
+
+async function allPostsByUser(req,res){
+    const { id } = req.params;
+    try {
+        
+        const posts = await prisma.post.findMany({
+            where:{
+                authorId: parseInt(id)
+            }
+        })
+
+        res.status(200).json(posts)
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error"});
     }
 }
 
 module.exports = {
-    signUpUser,
-    getUserFromDb,
-    verifyToken
+    userSignUp,
+    userLogin,
+    getSinglePostByUser,
+    allPostsByUser
 }
