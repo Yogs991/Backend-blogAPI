@@ -43,6 +43,27 @@ async function getCommentById(req, res){
     }
 }
 
+async function addComment(req,res){
+    const { id } = req.params;
+    const { content } = req.body;
+    try {
+        if(!content){
+            return res.status(400).json({message: 'Content required'});
+        }
+
+        const newComment = await prisma.comment.create({
+            data:{
+                content: content,
+                postId: parseInt(id),
+                authorId: req.user.userId
+            }
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message:'Internal server error'});
+    }
+}
+
 async function updateComment(req,res){
     const { id, commentId } = req.params;
     const { content } = req.body;
@@ -99,6 +120,7 @@ async function deleteComment(req,res){
 module.exports = {
     getCommentsForPost,
     getCommentById,
+    addComment,
     updateComment,
     deleteComment
 }

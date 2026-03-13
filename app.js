@@ -1,11 +1,13 @@
 require('dotenv').config();
-const path = require('node:path');
 const express = require("express");
+// const path = require('node:path');
 // const passport = require('passport');
 const cors = require("cors");
-const routes = require("./routes/router");
 const app = express();
 
+const userRouter = require("./routes/userRouter");
+const postRouter = require("./routes/postRouter");
+const commentRouter = require("./routes/commentRouter");
 
 app.use(cors(
     {
@@ -17,10 +19,13 @@ app.use(cors(
         allowedHeaders:["Content-Type", "Authorization"]
     }
 ));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/api", routes);
+app.use("/api/user", userRouter);
+app.use("/api/post", postRouter);
+app.use("/api/user-comments", commentRouter);
 
 const PORT = process.env.PORT || 3000;
 
