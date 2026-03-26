@@ -96,12 +96,12 @@ async function userLogin(req, res){
 }
 
 async function getSinglePostByUser(req,res){
-    const {id, postId} = req.params;
+    const {userId, postId} = req.params;
     try {
         const post = await prisma.post.findFirst({
             where:{
                 id: parseInt(postId),
-                authorId: parseInt(id)
+                authorId: parseInt(userId)
             }
         });
 
@@ -117,12 +117,12 @@ async function getSinglePostByUser(req,res){
 }
 
 async function allPostsByUser(req,res){
-    const { id } = req.params;
+    const { userId } = req.params;
     try {
         
         const posts = await prisma.post.findMany({
             where:{
-                authorId: parseInt(id)
+                authorId: parseInt(userId)
             }
         })
 
@@ -133,9 +133,50 @@ async function allPostsByUser(req,res){
     }
 }
 
+async function getAllUsers(req, res){
+    try {
+        const users = await prisma.user.findMany({
+            select:{
+                id: true,
+                email: true,
+                name: true,
+                password: true
+            },
+        });
+
+        return res.json(users);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function deleteUser(req,res){
+    try{
+        const {userId} = req.params;
+        const requester = req.user;
+
+        const isAdmin = requester.isAdmin === true;
+        const isSelf = requester.id === userId;
+
+        if(!isAdmin && !isSelf){
+            return res.status(403).json({message: "Forbidden"});
+        }
+
+        await prisma.user.delete({
+            where:{ id: parseInt(userId)}
+        });
+
+        res.status(204).end();
+    }catch(error){
+        console.log(error);
+    }
+}
+
 module.exports = {
     userSignUp,
     userLogin,
     getSinglePostByUser,
-    allPostsByUser
+    allPostsByUser,
+    getAllUsers,
+    deleteUser
 }

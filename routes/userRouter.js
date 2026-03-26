@@ -5,12 +5,16 @@ const userController = require("../controllers/userController");
 const authToken = require("../utils/token");
 
 //post route for log in
-userRouter.post("/", authToken.verifyToken, userController.userLogin);
+userRouter.post("/login", authToken.verifyToken, userController.userLogin);
 //post route for sign up 
-userRouter.post("/", userController.userSignUp);
+userRouter.post("/register", userController.userSignUp);
 //get route for all posts by user
-userRouter.get("/:id/posts", userController.allPostsByUser);
+userRouter.get("/:userId/posts", userController.allPostsByUser);
 //get route for a single post by user
-userRouter.get("/:id/posts/:postId", userController.getSinglePostByUser);
+userRouter.get("/:userId/posts/:postId", userController.getSinglePostByUser);
+//admin get all users
+userRouter.get("/", userController.getAllUsers);
+//delete a user
+userRouter.get("/:userId",userController.deleteUser);
 
 module.exports = userRouter;
