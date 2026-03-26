@@ -2,12 +2,13 @@ const express = require("express");
 const {Router} = require("express");
 const userRouter = express.Router();
 const userController = require("../controllers/userController");
+const validator = require("../utils/validators");
 const authToken = require("../utils/token");
 
 //post route for log in
-userRouter.post("/login", authToken.verifyToken, userController.userLogin);
+userRouter.post("/login", authToken.verifyToken, validator.loginValidation, userController.userLogin);
 //post route for sign up 
-userRouter.post("/register", userController.userSignUp);
+userRouter.post("/register", validator.registerValidation, userController.userSignUp);
 //get route for all posts by user
 userRouter.get("/:userId/posts", userController.allPostsByUser);
 //get route for a single post by user
