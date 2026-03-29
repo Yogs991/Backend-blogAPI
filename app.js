@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
-app.use("/api/user-comments", commentRouter);
+app.use("/api/comments", commentRouter);
 
 const PORT = process.env.PORT || 3000;
 

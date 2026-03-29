@@ -1,16 +1,18 @@
 const prisma = require("../lib/prisma.js");
 
 async function getCommentsForPost(req,res){
-    const { id } = req.params;
+    const { postId } = req.params;
     try{
         const comments = await prisma.comment.findMany({
-            where: { postId: parseInt(id)},
+            where: { postId: parseInt(postId)},
             include:{
                 author:{
                     select: { name: true }
                 }
             }
-        })
+        });
+
+        res.status(200).json(comments);
     }catch(error){
         console.error('Error fetching comments for post:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -18,12 +20,12 @@ async function getCommentsForPost(req,res){
 }
 
 async function getCommentById(req, res){
-    const { id, commentId} = req.params;
+    const { postId, commentId} = req.params;
     try{
         const comment = await prisma.comment.findUnique({
             where:{
                 id: parseInt(commentId),
-                postId: parseInt(id)
+                postId: parseInt(postId)
             },
             include:{
                 author:{
@@ -44,7 +46,7 @@ async function getCommentById(req, res){
 }
 
 async function addComment(req,res){
-    const { id } = req.params;
+    const { postId } = req.params;
     const { content } = req.body;
     try {
         if(!content){
@@ -54,7 +56,7 @@ async function addComment(req,res){
         const newComment = await prisma.comment.create({
             data:{
                 content: content,
-                postId: parseInt(id),
+                postId: parseInt(postId),
                 authorId: req.user.userId
             }
         })
@@ -65,11 +67,11 @@ async function addComment(req,res){
 }
 
 async function updateComment(req,res){
-    const { id, commentId } = req.params;
+    const { postId, commentId } = req.params;
     const { content } = req.body;
     try {
         const existingComment = await prisma.comment.findUnique({
-            where:{ id: parseInt(commentId), postId: parseInt(id)}
+            where:{ id: parseInt(commentId), postId: parseInt(postId)}
         })
 
         if(!existingComment){
@@ -93,12 +95,12 @@ async function updateComment(req,res){
 }
 
 async function deleteComment(req,res){
-    const { id, commentId} = req.params;
+    const { postId, commentId} = req.params;
     try {
         const existingComment = await prisma.comment.findUnique({
             where: {
                 id: parseInt(commentId),
-                postId: parseInt(id)
+                postId: parseInt(postId)
             }
         });
 
