@@ -5,6 +5,8 @@ const userController = require("../controllers/userController");
 const validator = require("../utils/validators");
 const authToken = require("../utils/token");
 
+
+userRouter.get("/me", authToken.verifyToken, userController.getCurrentUser);
 //post route for log in
 userRouter.post("/login", authToken.verifyToken, validator.loginValidation, userController.userLogin);
 //post route for sign up 

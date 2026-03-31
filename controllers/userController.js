@@ -3,6 +3,10 @@ const prisma = require("../lib/prisma.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+async function getCurrentUser(req, res){
+    res.json(req.user);
+}
+
 
 async function userSignUp(req,res){
     try{
@@ -173,6 +177,7 @@ async function deleteUser(req,res){
 }
 
 module.exports = {
+    getCurrentUser,
     userSignUp,
     userLogin,
     getSinglePostByUser,
