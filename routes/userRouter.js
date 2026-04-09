@@ -8,7 +8,7 @@ const authToken = require("../utils/token");
 
 userRouter.get("/me", authToken.verifyToken, userController.getCurrentUser);
 //post route for log in
-userRouter.post("/login", authToken.verifyToken, validator.loginValidation, userController.userLogin);
+userRouter.post("/login", validator.loginValidation, userController.userLogin);
 //post route for sign up 
 userRouter.post("/register", validator.registerValidation, userController.userSignUp);
 //get route for all posts by user
@@ -18,6 +18,6 @@ userRouter.get("/:userId/posts/:postId", userController.getSinglePostByUser);
 //admin get all users
 userRouter.get("/", userController.getAllUsers);
 //delete a user
-userRouter.get("/:userId",userController.deleteUser);
+userRouter.delete("/delete/:userId", authToken.verifyToken, userController.deleteUser);
 
 module.exports = userRouter;

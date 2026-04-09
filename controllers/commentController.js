@@ -60,6 +60,8 @@ async function addComment(req,res){
                 authorId: req.user.userId
             }
         })
+
+        res.status(201).json(newComment);
     } catch (error) {
         console.log(error);
         res.status(500).json({message:'Internal server error'});

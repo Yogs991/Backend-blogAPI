@@ -41,6 +41,7 @@ async function userSignUp(req,res){
             message: "User registered succesfully",
             user:{
                 id: newUser.id,
+                email: newUser.email,
                 password: newUser.password,
                 name: newUser.name
             }
@@ -61,12 +62,19 @@ async function userLogin(req, res){
             return res.status(400).json({message: 'Email and password are required'});
         }
 
-        const userEmail = await prisma.user.findUnique({
-            where: { email }
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select:{
+                id: true,
+                email: true,
+                name: true,
+                password: true,
+                isAdmin: true
+            }
         });
 
         //Check for invalid email
-        if(!userEmail){
+        if(!user){
             return res.status(401).json({error: "Invalid email"});
         }
 
@@ -79,10 +87,10 @@ async function userLogin(req, res){
 
         //Create jwt token
         const token = jwt.sign(
-            {userId: user.id, userEmail: user.email, userName: user.name},
+            {userId: user.id, userEmail: user.email, name: user.name, isAdmin: user.isAdmin},
             process.env.JWT_SECRET,
             {expiresIn:process.env.JWT_EXPIRES_IN}
-        )
+        );
         
         res.status(200).json({
             message:"Login successfull",
@@ -90,9 +98,9 @@ async function userLogin(req, res){
             user:{
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
             }
-        })
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
@@ -130,7 +138,7 @@ async function allPostsByUser(req,res){
             }
         })
 
-        res.status(200).json(posts)
+        res.status(200).json(posts);
     } catch (error) {
         console.log(error);
         res.status(500).json({message: "Internal server error"});
@@ -144,13 +152,13 @@ async function getAllUsers(req, res){
                 id: true,
                 email: true,
                 name: true,
-                password: true
             },
         });
 
         return res.json(users);
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        res.status(500).json({message: "Internal server error"});
     }
 }
 
@@ -160,7 +168,7 @@ async function deleteUser(req,res){
         const requester = req.user;
 
         const isAdmin = requester.isAdmin === true;
-        const isSelf = requester.id === userId;
+        const isSelf = requester.userId === parseInt(userId);
 
         if(!isAdmin && !isSelf){
             return res.status(403).json({message: "Forbidden"});
@@ -172,7 +180,8 @@ async function deleteUser(req,res){
 
         res.status(204).end();
     }catch(error){
-        console.log(error);
+        console.error(error);
+        res.status(500).json({message: "Internal server error"});
     }
 }
 

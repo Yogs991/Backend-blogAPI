@@ -1,3 +1,4 @@
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
 
@@ -13,8 +14,8 @@ function verifyToken(req,res,next){
             return res.status(401).json({ message: "Invalid or expired token" });
         }
     }else{
-        res.status(403);
+        return res.status(403).json({message: "No token provided"});
     }
 }
 
-module.exports = verifyToken
+module.exports = {verifyToken}
