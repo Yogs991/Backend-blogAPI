@@ -24,10 +24,10 @@ async function getAllPosts(req,res){
 }
 
 async function getCertainPost(req,res){
-    const {id} = req.params;
+    const {postId} = req.params;
     try{
         const post = await prisma.post.findUnique({
-            where: {id: parseInt(id)},
+            where: {id: parseInt(postId)},
             include:{
                 author:{
                     select: {name: true}
@@ -66,11 +66,11 @@ async function createPost(req,res){
 }
 
 async function editPost(req, res){
-    const {id} = req.params;
+    const {postId} = req.params;
     const {title, content, published} = req.body;
     try{
         const existingPost = await prisma.post.findUnique({
-            where: {id: parseInt(id)},
+            where: {id: parseInt(postId)},
         });
 
         if(!existingPost){
@@ -78,7 +78,7 @@ async function editPost(req, res){
         }
 
         const updatePost = await prisma.post.update({
-            where:{ id: parseInt(id) },
+            where:{ id: parseInt(postId) },
             data:{
                 title: title,
                 content: content,
@@ -93,10 +93,10 @@ async function editPost(req, res){
 }
 
 async function deletePost(req, res){
-    const { id } = req.params;
+    const { postId } = req.params;
     try{
         const existingPost = await prisma.post.findUnique({
-            where: {id: parseInt(id)},
+            where: {id: parseInt(postId)},
         });
 
         if(!existingPost){
@@ -118,10 +118,57 @@ async function deletePost(req, res){
     }
 }
 
+async function getCommentsForPost(req, res){
+    const {postId} = req.params;
+    try {
+        const comments = await prisma.comment.findMany({
+            where: {postId: parseInt(postId)},
+            include: {
+                author: {
+                    select:{ name : true}
+                }
+            }
+        });
+
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error("Error fetching comments for post:", error);
+        res.status(500).json({message: "Internal server error"});
+    }
+}
+
+async function getCommentById(req, res){
+    const {postId, commentId} = req.params;
+    try {
+        const comment = await prisma.comment.findUnique({
+            where: {
+                id: parseInt(commentId),
+                postId: parseInt(postId)
+            },
+            include:{
+                author:{
+                    select:{ name: true},
+                }
+            }
+        });
+
+        if(!comment){
+            return res.status(404).json({message: "Comment not found"});
+        }
+
+        res.status(200).json(comment);
+    } catch (error) {
+        console.error("Error fetching comments for post: ", error);
+        res.status(500).json({message: "Internal server error"});
+    }
+}
+
 module.exports = {
     getAllPosts,
     getCertainPost,
     createPost,
     editPost,
-    deletePost
+    deletePost,
+    getCommentsForPost,
+    getCommentById
 }

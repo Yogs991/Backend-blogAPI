@@ -1,49 +1,49 @@
 const prisma = require("../lib/prisma.js");
 
-async function getCommentsForPost(req,res){
-    const { postId } = req.params;
-    try{
-        const comments = await prisma.comment.findMany({
-            where: { postId: parseInt(postId)},
-            include:{
-                author:{
-                    select: { name: true }
-                }
-            }
-        });
+// async function getCommentsForPost(req,res){
+//     const { postId } = req.params;
+//     try{
+//         const comments = await prisma.comment.findMany({
+//             where: { postId: parseInt(postId)},
+//             include:{
+//                 author:{
+//                     select: { name: true }
+//                 }
+//             }
+//         });
 
-        res.status(200).json(comments);
-    }catch(error){
-        console.error('Error fetching comments for post:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
+//         res.status(200).json(comments);
+//     }catch(error){
+//         console.error('Error fetching comments for post:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// }
 
-async function getCommentById(req, res){
-    const { postId, commentId} = req.params;
-    try{
-        const comment = await prisma.comment.findUnique({
-            where:{
-                id: parseInt(commentId),
-                postId: parseInt(postId)
-            },
-            include:{
-                author:{
-                    select: { name: true }
-                }
-            }
-        });
+// async function getCommentById(req, res){
+//     const { postId, commentId} = req.params;
+//     try{
+//         const comment = await prisma.comment.findUnique({
+//             where:{
+//                 id: parseInt(commentId),
+//                 postId: parseInt(postId)
+//             },
+//             include:{
+//                 author:{
+//                     select: { name: true }
+//                 }
+//             }
+//         });
 
-        if(!comment){
-            return res.status(404).json({message: 'Comment not found'});
-        }
+//         if(!comment){
+//             return res.status(404).json({message: 'Comment not found'});
+//         }
         
-        res.status(200).json(comment);
-    }catch(error){
-        console.error('Error fetching comments for post:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-}
+//         res.status(200).json(comment);
+//     }catch(error){
+//         console.error('Error fetching comments for post:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// }
 
 async function addComment(req,res){
     const { postId } = req.params;
@@ -110,6 +110,10 @@ async function deleteComment(req,res){
             return res.status(404).json({message: 'Comment not found'});
         }
 
+        if(existingComment.authorId !== req.user.id && !req.user.isAdmin){
+            return res.status(403).json({message: 'Not authorized to delete this comment'});
+        }
+
         await prisma.comment.delete({
             where:{ id: parseInt(commentId)}
         });
@@ -122,8 +126,6 @@ async function deleteComment(req,res){
 }
 
 module.exports = {
-    getCommentsForPost,
-    getCommentById,
     addComment,
     updateComment,
     deleteComment
