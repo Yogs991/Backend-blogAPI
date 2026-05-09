@@ -7,7 +7,7 @@ const validator = require("../utils/validators");
 
 postRouter.get("/", postController.getAllPosts);
 postRouter.get("/:postId", postController.getCertainPost);
-postRouter.post("/", authToken.verifyToken, validator.createPostValidation, postController.createPost);
+postRouter.post("/create-post", authToken.verifyToken, validator.createPostValidation, postController.createPost);
 postRouter.put("/:postId", authToken.verifyToken, validator.updatePostValidation, postController.editPost);
 postRouter.delete("/:postId", authToken.verifyToken, postController.deletePost);
 postRouter.get("/:postId/comments", postController.getCommentsForPost);
