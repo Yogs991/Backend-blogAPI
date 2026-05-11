@@ -9,6 +9,11 @@ async function getAllPosts(req,res){
             include:{
                 author:{
                     select:{ name: true }
+                },
+                comments: {
+                    include: {
+                        author: { select : { name: true}}
+                    }
                 }
             }
         });
